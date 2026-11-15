@@ -124,6 +124,12 @@ const Decay={
  chest(){const k=S.dk;S.I+=.0035*k.rate*(.3+rnd()*1.4)*(rnd()<.1?2.5:1)},
  target(c,t){const k=S.dk,m=k.ch[c];let x=Math.max(0,(S.I-m.lag)/(1.1-m.lag));
   x=Math.pow(Math.min(x,1.6),m.ex)*m.gain;x*=1-k.mask*Math.max(0,1-S.I/1.8);
+  // El deterioro de la habitación también avanza con los cofres abiertos:
+  // así empieza a notarse pronto, incluso si la partida tiene una tasa lenta.
+  if(c==='decay'){
+   const gradual=1-Math.exp(-S.chests/360-S.secs/24000);
+   x=Math.max(x,gradual*.9);
+  }
   x+=Math.sin(t*m.f+m.ph)*.03*x;if(S.set.reduce)x*=.6;return clamp(x)}
 };
 function mut(s,force){ // cambia una letra
@@ -181,7 +187,7 @@ const Env={
   o=this.off(4,t);ctx.fillStyle=c(350,35,26);ctx.beginPath();ctx.ellipse(cx+o.x,cy+cs*.32,cs*1.5,cs*.42,0,0,6.3);ctx.fill(); // alfombra
   // Deterioro físico acumulativo: grietas, humedad y telarañas.
   const d=L.decay;
-  if(d>.08){
+  if(d>.035){
    ctx.save();ctx.lineCap='round';ctx.globalAlpha=clamp((d-.08)*.72,0,.58);
    ctx.strokeStyle='#17191b';ctx.lineWidth=1+d*1.1;
    const cracks=[
@@ -189,7 +195,7 @@ const Env={
     [[x0+ww*.77,y0+bh*.1],[x0+ww*.74,y0+bh*.16],[x0+ww*.76,y0+bh*.22],[x0+ww*.72,y0+bh*.29]],
     [[x0+ww*.43,y1-bh*.12],[x0+ww*.46,y1-bh*.18],[x0+ww*.44,y1-bh*.24]]
    ];
-   cracks.forEach((p,i)=>{if(d>.12+i*.12){ctx.beginPath();p.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke()}});
+   cracks.forEach((p,i)=>{if(d>.045+i*.12){ctx.beginPath();p.forEach((q,j)=>j?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke()}});
    ctx.globalAlpha=clamp((d-.22)*.17,0,.13);ctx.fillStyle='#292b25';
    [[x0+ww*.08,y0+bh*.78,ww*.075,bh*.13],[x1-ww*.13,y0+bh*.7,ww*.09,bh*.17]].forEach(a=>{ctx.beginPath();ctx.ellipse(a[0],a[1],a[2],a[3],-.2,0,6.3);ctx.fill()});
    const web=(x,y,dx,dy)=>{ctx.globalAlpha=clamp((d-.2)*.72,0,.48);ctx.strokeStyle='#c2c0b5';ctx.lineWidth=.7;
